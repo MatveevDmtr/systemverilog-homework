@@ -4,3 +4,5 @@ sim.out
 dump*.vcd
 log.txt
 lint.txt
+*.vcd
+*.vvp

@@ -29,5 +29,12 @@ module or_gate_using_mux
   // Implement or gate using instance(s) of mux,
   // constants 0 and 1, and wire connections
 
+  mux inst1(
+          .d0(b),
+          .d1(1'b1),
+          .sel(a),
+          .y(o)
+  );
+
 
 endmodule
