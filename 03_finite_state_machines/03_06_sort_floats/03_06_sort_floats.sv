@@ -86,5 +86,52 @@ module sort_three_floats (
     // The FLEN parameter is defined in the "import/preprocessed/cvw/config-shared.vh" file
     // and usually equal to the bit width of the double-precision floating-point number, FP64, 64 bits.
 
+    logic u0_less_or_equal_u1, u1_less_or_equal_u2, u0_less_or_equal_u2;
+    logic err01, err12, err02;
+
+    f_less_or_equal i_floe_01
+    (
+        .a   ( unsorted [0]        ),
+        .b   ( unsorted [1]        ),
+        .res ( u0_less_or_equal_u1 ),
+        .err ( err01               )
+    );
+
+    f_less_or_equal i_floe_12
+    (
+        .a   ( unsorted [1]        ),
+        .b   ( unsorted [2]        ),
+        .res ( u1_less_or_equal_u2 ),
+        .err ( err12               )
+    );
+
+    f_less_or_equal i_floe_02
+    (
+        .a   ( unsorted [0]        ),
+        .b   ( unsorted [2]        ),
+        .res ( u0_less_or_equal_u2 ),
+        .err ( err02               )
+    );
+
+    always_comb
+        if (u0_less_or_equal_u1 & u1_less_or_equal_u2 & u0_less_or_equal_u2)
+            sorted = unsorted;
+        else if (u0_less_or_equal_u1 & ~u1_less_or_equal_u2 & u0_less_or_equal_u2)
+            {   sorted [0],   sorted [1],   sorted [2] }
+            = { unsorted [0], unsorted [2], unsorted [1] };
+        else if (~u0_less_or_equal_u1 & u1_less_or_equal_u2 & u0_less_or_equal_u2)
+            {   sorted [0],   sorted [1],   sorted [2] }
+            = { unsorted [1], unsorted [0], unsorted [2] };
+        else if (u0_less_or_equal_u1 & ~u1_less_or_equal_u2 & ~u0_less_or_equal_u2)
+            {   sorted [0],   sorted [1],   sorted [2] }
+            = { unsorted [2], unsorted [0], unsorted [1] };
+        else if (~u0_less_or_equal_u1 & u1_less_or_equal_u2 & ~u0_less_or_equal_u2)
+            {   sorted [0],   sorted [1],   sorted [2] }
+            = { unsorted [1], unsorted [2], unsorted [0] };
+        else if (~u0_less_or_equal_u1 & ~u1_less_or_equal_u2 & ~u0_less_or_equal_u2)
+            {   sorted [0],   sorted [1],   sorted [2] }
+            = { unsorted [2], unsorted [1], unsorted [0] };
+
+    assign err = err01 | err12 | err02;
 
 endmodule

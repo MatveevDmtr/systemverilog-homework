@@ -40,6 +40,95 @@ module formula_1_impl_2_fsm
     // in the article by Yuri Panchul published in
     // FPGA-Systems Magazine :: FSM :: Issue ALFA (state_0)
     // You can download this issue from https://fpga-systems.ru/fsm
+    enum logic [2:0]
+    {
+        st_idle        = 3'd0,
+        st_wait_ab_res = 3'd1,
+        st_wait_c_res = 3'd2
+    }
+    state, next_state;
+
+    //------------------------------------------------------------------------
+    // Next state and isqrt interface
+
+    always_comb
+    begin
+        next_state  = state;
+
+        isqrt_1_x_vld = '0;
+        isqrt_1_x     = 'x;  // Don't care
+        isqrt_2_x_vld = '0;
+        isqrt_2_x     = 'x;  // Don't care
+
+        // This lint warning is bogus because we assign the default value above
+        // verilator lint_off CASEINCOMPLETE
+
+        case (state)
+        st_idle:
+        begin
+            isqrt_1_x = a;
+            isqrt_2_x = b;
+
+            if (arg_vld)
+            begin
+                isqrt_1_x_vld = '1;
+                isqrt_2_x_vld = '1;
+                next_state  = st_wait_ab_res;
+            end
+        end
+
+        st_wait_ab_res:
+        begin
+            if (isqrt_1_y_vld & isqrt_2_y_vld)
+            begin
+                isqrt_1_x = c;
+                isqrt_1_x_vld = '1;
+                isqrt_2_x_vld = '0;
+                next_state  = st_wait_c_res;
+            end
+        end
+
+        st_wait_c_res:
+        begin
+            if (isqrt_1_y_vld)
+            begin
+                next_state = st_idle;
+            end
+        end
+        endcase
+
+        // verilator lint_on  CASEINCOMPLETE
+
+    end
+
+    //------------------------------------------------------------------------
+    // Assigning next state
+
+    always_ff @ (posedge clk)
+        if (rst)
+            state <= st_idle;
+        else
+            state <= next_state;
+
+    //------------------------------------------------------------------------
+    // Accumulating the result
+
+    always_ff @ (posedge clk)
+        if (rst)
+            res_vld <= '0;
+        else
+            res_vld <= (state == st_wait_c_res & isqrt_1_y_vld);
+
+    always_ff @ (posedge clk)
+        if (state == st_idle)
+            res <= '0;
+        else if (isqrt_1_y_vld)
+        begin
+            if (isqrt_2_y_vld)
+                res <= res + 32' (isqrt_1_y + isqrt_2_y);
+            else
+                res <= res + 32' (isqrt_1_y);
+        end
 
 
 endmodule
