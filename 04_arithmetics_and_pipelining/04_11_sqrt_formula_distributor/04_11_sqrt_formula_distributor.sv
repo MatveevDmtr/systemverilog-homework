@@ -1,3 +1,6 @@
+`include "03_04_formula_1_impl_2_fsm.sv"
+`include "03_05_formula_2_fsm.sv"
+
 module sqrt_formula_distributor
 # (
     parameter formula = 1,
@@ -13,8 +16,7 @@ module sqrt_formula_distributor
     input  [31:0] c,
 
     output        res_vld,
-    output [31:0] res
-);
+    output [31:0] resarg_vld
 
     // Task:
     //
@@ -42,6 +44,11 @@ module sqrt_formula_distributor
     // Hint:
     // Instantiate sufficient number of "formula_1_impl_1_top", "formula_1_impl_2_top",
     // or "formula_2_top" modules to achieve desired performance.
+
+    localparam N1 = 0;
+    localparam WIDTH = 32;
+
+    logic 
 
 
 endmodule

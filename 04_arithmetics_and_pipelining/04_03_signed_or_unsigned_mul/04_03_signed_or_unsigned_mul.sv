@@ -52,5 +52,10 @@ module signed_or_unsigned_mul
   input                signed_mul,
   output [2 * n - 1:0] res
 );
+    logic [2*n-1:0] a_ext, b_ext;
 
+    assign a_ext = signed_mul ? {{n{a[n-1]}}, a} : {{n{1'b0}}, a};
+    assign b_ext = signed_mul ? {{n{b[n-1]}}, b} : {{n{1'b0}}, b};
+
+    assign res = a_ext * b_ext;
 endmodule

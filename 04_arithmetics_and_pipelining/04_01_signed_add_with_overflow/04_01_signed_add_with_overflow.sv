@@ -36,5 +36,12 @@ module signed_add_with_overflow
   // of two input arguments does not fit into 4 bits.
   // Otherwise the 'overflow' should be set to 0.
 
+  logic [4:0] sum_5_bits;
+    
+  assign sum_5_bits = {a[3], a} + {b[3], b};
+  assign sum = sum_5_bits[3:0];
+  
+  assign overflow = sum_5_bits[4] ^ sum_5_bits[3];
+
 
 endmodule
