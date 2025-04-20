@@ -61,5 +61,97 @@ module formula_1_pipe_aware_fsm
     // FPGA-Systems Magazine :: FSM :: Issue ALFA (state_0)
     // You can download this issue from https://fpga-systems.ru/fsm#state_0
 
+    // Состояния FSM
+    typedef enum logic [2:0] {
+        st_idle,       
+        st_send_b,     
+        st_send_c,     
+        st_aggr_res,        
+        st_success      
+    } state_t;
+
+    state_t state, next_state;
+
+    logic [31:0] sqrt_a, sqrt_b; 
+    logic [1:0] count_res;   
+
+    always_comb begin
+        next_state = state;
+        isqrt_x_vld = 1'b0;
+        isqrt_x = 32'b0;
+        res_vld = 1'b0;
+
+        case (state)
+            st_idle: begin
+                if (arg_vld) 
+                begin
+                    isqrt_x = a;
+                    isqrt_x_vld = 1'b1;
+                    next_state = st_send_b;
+                end
+            end
+
+            st_send_b: 
+            begin
+                isqrt_x = b;
+                isqrt_x_vld = 1'b1;
+                next_state = st_send_c;    
+            end
+
+            st_send_c: 
+            begin
+                isqrt_x = c;
+                isqrt_x_vld = 1'b1;
+                next_state = st_aggr_res;
+            end
+
+            st_aggr_res: 
+            begin
+                if (isqrt_y_vld && count_res == 2) 
+                begin
+                    next_state = st_success;
+                end
+            end
+
+            st_success: 
+            begin
+                res_vld = 1'b1;
+                next_state = st_idle;
+            end
+
+            default: next_state = st_idle;
+        endcase
+    end
+
+    always_ff @(posedge clk) 
+    begin
+        if (rst) begin
+            state <= st_idle;
+            sqrt_a <= 0;
+            sqrt_b <= 0;
+            count_res <= 0;
+            res <= 0;
+        end 
+        else begin
+            state <= next_state;
+
+            if (isqrt_y_vld) begin
+                case (count_res)
+                    0: sqrt_a <= {16'b0, isqrt_y};
+                    1: sqrt_b <= {16'b0, isqrt_y};
+                     // isqrt(a) + isqrt(b) + isqrt(c)
+                    2: res <= sqrt_a + sqrt_b + {16'b0, isqrt_y};
+                endcase
+
+                count_res <= count_res + 1;
+            end
+
+            if (state == st_success) begin
+                count_res <= 0;
+            end
+        end
+    end
+
+
 
 endmodule
