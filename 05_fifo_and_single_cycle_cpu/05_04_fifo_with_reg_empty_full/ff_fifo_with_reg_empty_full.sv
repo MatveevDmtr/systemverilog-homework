@@ -56,7 +56,7 @@ module ff_fifo_with_reg_empty_full
             empty_d  = empty;
             full_d   = full;
         end
-        endcase
+        endcasewr
     end
 
     //------------------------------------------------------------------------
