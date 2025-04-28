@@ -30,5 +30,41 @@ module put_in_order
     // The idea of the block is kinda similar to the "parallel_to_serial" block
     // from Homework 2, but here block should also preserve the output order.
 
+    logic[width-1:0]            data_a[n_inputs-1:0];
+    logic[width-1:0]            data_b[n_inputs-1:0];
+    logic[n_inputs-1:0]         vld_a, vld_b;
+    logic[n_inputs-1:0]         vld_next_a;
+    
+    logic[$clog2(n_inputs)-1:0] cnt;
+    assign vld_next_a = vld_a & ~(1 << cnt);
+
+    always_ff @ (posedge clk) begin
+        if (rst) 
+        begin
+            cnt <= 0;
+            vld_a <= 0;
+            vld_b <= 0;
+        end
+        else 
+        begin
+            if (vld_a[cnt])
+                cnt <= (cnt >= (n_inputs-1)) ? 0 : cnt + 1;
+
+            vld_b <= (vld_b & ~(1 << cnt)) | (vld_next_a & up_vlds);
+            vld_a <= vld_next_a | vld_b | up_vlds;
+        end
+
+        for (int i = 0; i < n_inputs; i++) begin
+            if (!(vld_next_a[i]))
+                if (up_vlds[i])
+                    data_a[i] <= up_data[i];
+            if (up_vlds[i] && vld_a[i])
+                data_b[i] <= up_data[i];
+        end
+    end
+
+    assign down_vld  = vld_a [cnt];
+    assign down_data = data_a[cnt];
+
 
 endmodule
