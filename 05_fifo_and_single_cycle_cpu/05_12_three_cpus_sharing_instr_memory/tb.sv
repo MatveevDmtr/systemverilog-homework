@@ -36,12 +36,12 @@ module tb;
         .clk     ( clk ),
         .rst     ( rst ),
 
-    //  .rstPC   ( { nCPUs { PC_Fibonacci } } ),
+        .rstPC   ( { nCPUs { PC_Fibonacci } } ),
 
-        .rstPC   ( {
-                       { nCPUs - 2 { PC_Factorial } },
-                       {         2 { PC_Fibonacci } }
-                 } ),
+        // .rstPC   ( {
+        //               { nCPUs - 2 { PC_Factorial } },
+        //               {         2 { PC_Fibonacci } }
+        //         } ),
 
         .regAddr ( { nCPUs { checkReg } } ),
         .regData ( regData )
@@ -55,10 +55,10 @@ module tb;
     begin
         for (int i = 0; i < nCPUs; i ++)
         begin
-            // if (regData [i] == passRegData_Fibonacci)
+             if (regData [i] == passRegData_Fibonacci)
 
-            if (   i <= 1 && regData [i] == passRegData_Fibonacci
-                || i >  1 && regData [i] == passRegData_Factorial )
+           //if(   i <= 1 && regData [i] == passRegData_Fibonacci
+                //|| i >  1 && regData [i] == passRegData_Factorial)
             begin
                 testPass [i] <= 1;
             end
@@ -94,7 +94,7 @@ module tb;
             // Uncomment the following `define
             // to generate a VCD file and analyze it using GTKwave
 
-            // $dumpvars;
+             $dumpvars;
         `endif
 
         @ (negedge rst);
